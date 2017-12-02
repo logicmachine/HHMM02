@@ -1,0 +1,8 @@
+body {
+  margin-top: 3.5rem;
+}
+
+#graph-svg {
+  width: 1000px;
+  height: 1000px;
+}
