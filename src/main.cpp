@@ -3,11 +3,7 @@
 #include "sparse_graph.hpp"
 #include "kings_graph.hpp"
 #include "complete.hpp"
-#include "spiral_greedy.hpp"
-#include "cmr14.hpp"
-#include "clique_tiling.hpp"
-#include "skew_spiral_beam.hpp"
-#include "skew_cyclic.hpp"
+#include "large_solver.hpp"
 
 int main(){
 	std::ios_base::sync_with_stdio(false);
@@ -33,10 +29,8 @@ int main(){
 	std::vector<int> mapping(n_emb, -1);
 	if(is_complete_embeddable(g, kg)){
 		mapping = complete_embedding(g, kg);
-	}else if(use_skew_cyclic(g, kg)){
-		mapping = skew_cyclic(g, kg);
 	}else{
-		mapping = spiral_greedy(g, kg);
+		mapping = solve_large(g, kg);
 	}
 
 	std::vector<std::vector<int>> imapping(n);
