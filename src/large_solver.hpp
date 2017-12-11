@@ -266,7 +266,7 @@ public:
 				next.score = score;
 				next.status = cur.status;
 				next.status[u] = true;
-				next.history.reserve(i + 1);
+				next.history.reserve(q + 1);
 				for(const auto& x : cur.history){ next.history.push_back(x); }
 				next.history.push_back(u);
 				next_states.push_back(std::move(next));
