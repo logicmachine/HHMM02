@@ -13,7 +13,7 @@
 #include "radix_sort.hpp"
 #include "xorshift128.hpp"
 
-#define DEBUG_DUMP
+// #define DEBUG_DUMP
 
 namespace large_solver_detail {
 
@@ -316,8 +316,8 @@ public:
 		auto last_time = start_time;
 		auto max_duration = last_time - start_time;
 
-		const double max_temp = 0.3;
-		const double min_temp = 0.1;
+		const double max_temp = 0.4;
+		const double min_temp = 0.15;
 		do {
 			const double progress = (last_time - start_time) / time_limit;
 			const double temperature =
@@ -450,13 +450,20 @@ public:
 template <size_t MAX_N>
 std::vector<int> run(const SparseGraph& g, const KingsGraph& kg){
 	assert(kg.width() == kg.height());
+
+	const auto time_limit = std::chrono::milliseconds(29700);
+	const int beam_width = 3000;
+
+	const auto start_time = std::chrono::steady_clock::now();
 	EmbedGraph eg(g.size(), kg);
 
 	BeamSearch<MAX_N> beam_search;
-	std::vector<int> mapping = beam_search(g, eg, 4000);
+	std::vector<int> mapping = beam_search(g, eg, beam_width);
 
+	const auto sa_time_limit =
+		time_limit - (std::chrono::steady_clock::now() - start_time);
 	SimulatedAnnealing<MAX_N> simulated_annealing;
-	mapping = simulated_annealing(g, eg, mapping, std::chrono::milliseconds(10000));
+	mapping = simulated_annealing(g, eg, mapping, sa_time_limit);
 
 	HillClimbing hill_climbing;
 	mapping = hill_climbing(g, eg, mapping);
