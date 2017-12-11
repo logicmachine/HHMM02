@@ -182,9 +182,55 @@ var render_current_group = function(gid){
     .attr('stroke-width', 6.0)
     .attr('stroke', 'black');
 };
-
 var clear_current_group = function(){
   d3.select('#current-edges').selectAll('line').remove();
+};
+
+var render_scored_edges = function(){
+  var w = stat_data.g_emb.width, h = stat_data.g_emb.height;
+  var n = stat_data.g.num_vertices, n_emb = w * h;
+  var mapping = new Array(n_emb);
+  for(var i = 0; i < n_emb; ++i){ mapping[i] = -1; }
+  for(var i = 0; i < n; ++i){
+    stat_data.solution[i].forEach(function(x){ mapping[x] = i; });
+  }
+  var edges = new Array(n);
+  for(var i = 0; i < n; ++i){ edges[i] = new Set(); }
+  stat_data.g.edges.forEach(function(e){
+    edges[e[0]].add(e[1]);
+    edges[e[1]].add(e[0]);
+  });
+  var valid_edges = [];
+  for(var uy = 0; uy < h; ++uy){
+    for(var ux = 0; ux < w; ++ux){
+      var u = uy * w + ux;
+      if(mapping[u] < 0){ continue; }
+      for(var d = 0; d < 8; ++d){
+        var vy = uy + dy[d], vx = ux + dx[d];
+        if(vy < 0 || h <= vy || vx < 0 || w <= vx){ continue; }
+        var v = vy * w + vx;
+        if(u > v || mapping[v] < 0 || mapping[u] == mapping[v]){ continue; }
+        if(edges[mapping[u]].has(mapping[v])){
+          valid_edges.push({ x1: ux, y1: uy, x2: vx, y2: vy });
+          edges[mapping[u]].delete(mapping[v]);
+          edges[mapping[v]].delete(mapping[u]);
+        }
+      }
+    }
+  }
+  var xscale = make_xscale(), yscale = make_yscale();
+  d3.select('#scored-edges').selectAll('line').remove();
+  d3.select('#scored-edges')
+    .selectAll('line')
+    .data(valid_edges)
+    .enter()
+    .append('line')
+    .attr('x1', function(d){ return xscale(d.x1); })
+    .attr('y1', function(d){ return xscale(d.y1); })
+    .attr('x2', function(d){ return xscale(d.x2); })
+    .attr('y2', function(d){ return xscale(d.y2); })
+    .attr('stroke-width', 1.5)
+    .attr('stroke', '#c0c0ff');
 };
 /*
 var render_embed_edges = function(){
@@ -298,6 +344,7 @@ $(document).on('drop', function(e){
     return function(e){
       stat_data = JSON.parse(e.target.result);
       render_group_edges();
+      render_scored_edges();
       render_embed_vertices();
       $("#info-score").text(stat_data["score"]);
       $("#info-total").text(stat_data["total"]);

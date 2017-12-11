@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+import sys
 import math
 import re
 import datetime
@@ -63,11 +64,11 @@ def parse_problem(in_data):
 
 def parse_solution(n, stdout):
     result = [None] * n
-    for line in stdout.split("\n"):
+    for u, line in enumerate(stdout.split("\n")):
         if line.strip() == "":
             continue
         tokens = list(map(lambda x: int(x) - 1, line.split()))
-        result[tokens[0]] = set(tokens[1:])
+        result[u] = set(tokens[1:])
     return result
 
 def evaluate(g, g_emb, solution):
@@ -115,8 +116,12 @@ def run(executable, fname):
     start_dt = datetime.now()
     proc = subprocess.Popen(
             [executable, fname],
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate(in_data.encode("utf-8"))
+    for line in stderr.decode("utf-8").strip().split("\n"):
+        sys.stderr.write("{}: {}\n".format(fname, line))
     end_dt = datetime.now()
     exec_time = (end_dt - start_dt).total_seconds()
     g, g_emb = parse_problem(in_data)
@@ -146,7 +151,7 @@ def main():
     os.makedirs(outdir, exist_ok=True)
     results = Parallel(n_jobs=-1)([
         delayed(run)("./a.out", fname)
-        for fname in glob.glob("../dataset/*.in")])
+        for fname in list(glob.glob("../dataset/*.in"))])
     summary = []
     score_sum = 0
     total_sum = 0

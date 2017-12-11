@@ -4,6 +4,10 @@
 #include "kings_graph.hpp"
 #include "complete.hpp"
 #include "spiral_greedy.hpp"
+#include "cmr14.hpp"
+#include "clique_tiling.hpp"
+#include "skew_spiral_beam.hpp"
+#include "skew_cyclic.hpp"
 
 int main(){
 	std::ios_base::sync_with_stdio(false);
@@ -29,6 +33,8 @@ int main(){
 	std::vector<int> mapping(n_emb, -1);
 	if(is_complete_embeddable(g, kg)){
 		mapping = complete_embedding(g, kg);
+	}else if(use_skew_cyclic(g, kg)){
+		mapping = skew_cyclic(g, kg);
 	}else{
 		mapping = spiral_greedy(g, kg);
 	}
@@ -38,7 +44,7 @@ int main(){
 		if(mapping[i] >= 0){ imapping[mapping[i]].push_back(i); }
 	}
 	for(int i = 0; i < n; ++i){
-		std::cout << (i + 1);
+		std::cout << imapping[i].size();
 		for(const int x : imapping[i]){
 			std::cout << " " << (x + 1);
 		}
